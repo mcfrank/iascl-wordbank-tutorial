@@ -1,7 +1,7 @@
 ---
-title: "IASCL Wordbank Tutorial"
+title:  "IASCL Wordbank Tutorial"
 author: "Alvin Tan, Virginia Marchman, and Mike Frank"
-date: "2024-07-15"
+date:   "2024-07-15"
 format: html
 ---
 
@@ -10,7 +10,8 @@ To retrieve data, you will need the `wordbankr` package, and we will also be usi
 
 ```{r install, eval=F}
 # run this only once to install wordbankr and tidyverse
-install.packages("wordbankr")
+install.packages("devtools")
+devtools::install_github("langcog/wordbankr")
 install.packages("tidyverse")
 ```
 
@@ -19,9 +20,23 @@ library(wordbankr)
 library(tidyverse)
 ```
 
+# R + Markdown
+This document is a Quarto Markdown document (similar to an R Markdown document); it contains text (like this), as well as code blocks, which are indicated by three backticks and the type of code in braces:
+```{r}
+# This is a code block!
+```
+
+QMD/RMD documents are really good for reproducible analysis and documentation: they allow you to include both text and code in the same place, so you don't have to generate a plot in one piece of software and copy it somewhere else where your text lives, which is very prone to error (e.g., you updated a part of your analysis pipeline... but forgot to copy one of the new plots back).
+It also allows other collaborators to read and understand your code, and how it fits in with the overall structure of the document (rather than having to constantly cross-refer from the manuscript to the code).
+
+A few basic tips and tricks when working with QMD/RMD documents:
+* The stuff at the very top of the document is its YAML header, which contains basic information about the document.
+* For code blocks, the grey down triangle with a green bar means "run all previous code chunks", and the green right triangle (or Cmd/Ctrl+Shift+Enter) means "run this code chunk".
+* You can knit/render the document (via a button on the toolbar, or Cmd/Ctrl+Shift+K) to generate a rendered HTML/PDF/DOCX file (useful for quickly sharing some analysis, or for various manuscript submissions).
+
 # `tidyverse` refresher
-I will assume that you already have some familiarity with R, but just as a quick refresher, we will go through a few of the key aspects of the `tidyverse` that we will use.
-The best reference for this material is Hadley Wickham's [R for Data Scientists](http://r4ds.had.co.nz/) and I encourage you to read it if you are interested in learning more. 
+We will assume that you already have some familiarity with R, but just as a quick refresher, we will go through a few of the key aspects of the `tidyverse` that we will use.
+The best reference for this material is Hadley Wickham's [R for Data Scientists](http://r4ds.had.co.nz/) and we encourage you to read it if you are interested in learning more. 
 
 ## Tidy data
 The basic data structure we're working with is the dataframe (or `tibble` in the `tidyverse` implementation).
@@ -34,10 +49,10 @@ This consistency allows us to adopt a uniform approach to handling the data, and
 
 ## Data wrangling
 Once we have tidy data, we can manipulate them using some of the functions in the `tidyverse`.
-To illustrate some of these functions (or "verbs"), we will use an old version of the English (American) Words & Sentnces dataset from Wordbank.
+To illustrate some of these functions (or "verbs"), we will use an old version of the English (American) Words & Sentences dataset from Wordbank.
 We can take a peek at what's in the data by using the `head` function. 
 ```{r}
-admins_eng_ws <- read_csv("https://github.com/alvinwmtan/2023-mpal-wordbank/raw/master/eng_ws_data.csv")
+admins_eng_ws <- read_csv("eng_ws_data.csv")
 head(admins_eng_ws)
 ```
 
@@ -129,11 +144,11 @@ admins_eng_ws |>
 
 # Visualising Wordbank data
 Now we can make our canonical plot of the variability of individual children's vocabularies. 
-Note that we are using `geom_jitter`, which jitters points around so they don't all end up on top of one another. 
+Note that we are using `geom_jitter`, which jitters points around so they don't all end up on top of one another; the amount of jitter is controlled by `width` and `height` (note that we _don't_ jitter vertically at all here). 
 The arguments to the function (`alpha` and `size`) make the points smaller and semi-transparent, so they all can be seen on one plot. 
 ```{r}
 ggplot(admins_eng_ws, aes(x = age, y = production)) +
-  geom_jitter(alpha = .1, width = .3, height = 0) +
+  geom_jitter(alpha = .1, size = .8, width = .3, height = 0) +
   # geom_point(alpha = .1) +
   geom_smooth() +
   labs(x = "Age (months)",
@@ -145,6 +160,13 @@ Group the data by age and sex, then get the mean production values by group.
 Plot the result! 
 
 Hint: you can reuse your code from a previous exercise.
+```{r}
+# your code here:
+
+```
+
+Does this effect hold across languages? 
+Try generating the same plot for a different language---do you see the same effect?
 ```{r}
 # your code here:
 
@@ -217,17 +239,32 @@ dog_cat_data |>
 Now we can aggregate and plot these data. 
 Check out this slightly more complex pipe chain where we do a join, and then a group, and then a summarise!
 ```{r}
-dog_cat_data |>
+dog_cat_means <- dog_cat_data |>
   left_join(admins_eng_ws) |>
   filter(!is.na(sex)) |>
   group_by(age, sex, item_definition) |>
-  summarise(produces = mean(produces, na.rm=TRUE)) ->
-  dog_cat_means 
+  summarise(produces = mean(produces, na.rm=TRUE))
 
 ggplot(dog_cat_means, aes(x = age, y = produces, col = sex)) +
   geom_point() + 
   geom_smooth() +
   facet_wrap(~item_definition)
+```
+
+**EXERCISE:** The plot above has two _facets_, one for each word.
+Try replotting the data with one facet for each sex, so that the curves for `cat` and `dog` are in the same facet.
+Are the curves similar or different? 
+```{r}
+# your code here:
+
+```
+
+Looking at `item_eng_ws`, choose two other words which you think will have a big difference in their production curves.
+Extract the item-level data for those words, and plot them. 
+Is the difference in these curves bigger than that between `cat` and `dog`?
+```{r}
+# your code here:
+
 ```
 
 # Replicating Bates & Goodman (1997)
@@ -257,12 +294,14 @@ Hint: try using `sum(value == "complex")` to add them up.
 Hint: `data_id` indicates a unique child.
 ```{r}
 # your code here:
+
 ```
 
 **EXERCISE:** now join `complexity_means` and `admins_eng_ws` to create a single dataframe.
 ```{r}
 # complete this command:
 # admins_eng_ws <- left_join(...)
+
 ```
 
 Now we can plot the relationship described by Bates and Goodman!
@@ -279,17 +318,29 @@ cor.test(admins_eng_ws$production, admins_eng_ws$complexity_score)
 ```
 
 # Going beyond
-## Challenge problem
-If you had no trouble doing the prior two exercises, try making the same figure as above, but this time compare to the total productive PREDICATE vocabulary, instead of the TOTAL vocabulary. 
+## Mini projects
+Now that you have some familiarity with Wordbank, we'll give you some time to work on your own mini projects!
+Think about some potential questions you could ask with the data---what new analyses can you run?
+We encourage you to explore items, languages, or categories that are relevant to your own work.
 
-To do this, you will need to pull the instrument data for predicates and create the same kind of child-level score dataframe you did for complexity, with a variable called `predicate_score`. 
-Let's see what you get!
+For the mini project, form groups of 1--3, and designate someone to be the code driver.
+In groups, do the following:
 
-## Your ideas here
-Now that you have a bit more familiarity with Wordbank, think about some potential questions you could ask with the data.
-What new analyses can you run? 
-How might you link this with the other language development research you're working on?
-Wordbank has a wealth of data in an accessible and standardised format, and I'd encourage you to do some exploration in your own time!
+1. Identify a research question
+You can look at the administration and instrument dataframes to recall what kinds of data are available, and choose a question that relate to these data.
+We'd encourage you to come up with your own question, but just in case you're completely stuck, here are a few ideas:
+- (Easy): Repeat the comparison between grammar and lexicon, but this time compare to the total productive PREDICATE vocabulary, instead of the TOTAL vocabulary. 
+- (Easy): Choose one language, a second language that is similar to it (e.g., same language family), and a third language that is very different from it (e.g., different language family). How do their vocabulary-by-age curves compare? (You may need to convert vocabulary scores to proportions because different languages may have forms of different lengths.)
+- (Medium): For each administration, find the proportion of the child's vocabulary that is made up of nouns, predicates, function words, and other words. How do these proportions change over age?
+- (Hard): Filter the data down to a single age bin that has a lot of administrations (e.g., 24-month-olds for American English WS), and calculate the proportion of children that produce each word. Load in concreteness ratings from [Brysbaert et al., 2014](https://link.springer.com/article/10.3758/s13428-013-0403-5#MOESM1), and join them in using the `uni_lemma` field. Are words that are more concrete also more likely to be produced?
+
+2. Load and process the data
+Based on the question you've chosen, pull the corresponding data from Wordbank, and process it to get your variables of interest (e.g., by generating scores, or filtering to the relevant data).
+
+3. Visualise and interpret the data
+Create a visualisation that helps to answer your research question. 
+Was your hypothesis supported by the data?
+What further questions do you have that you might want to explore?
 
 ## Contribute to Wordbank
 If you use the CDIs in your research, and would like to support open science, we'd love for you to contribute your CDI data to Wordbank!
