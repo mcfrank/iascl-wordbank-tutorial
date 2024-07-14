@@ -15,13 +15,16 @@ devtools::install_github("langcog/wordbankr")
 install.packages("tidyverse")
 ```
 
+
 ```{r setup}
 library(wordbankr)
 library(tidyverse)
 ```
 
 # R + Markdown
+
 This document is a Quarto Markdown document (similar to an R Markdown document); it contains text (like this), as well as code blocks, which are indicated by three backticks and the type of code in braces:
+
 ```{r}
 # This is a code block!
 ```
@@ -30,16 +33,20 @@ QMD/RMD documents are really good for reproducible analysis and documentation: t
 It also allows other collaborators to read and understand your code, and how it fits in with the overall structure of the document (rather than having to constantly cross-refer from the manuscript to the code).
 
 A few basic tips and tricks when working with QMD/RMD documents:
-* The stuff at the very top of the document is its YAML header, which contains basic information about the document.
+* The stuff at the very top of the document is its YAML header, which contains basic information about the document. (Don't mess with this mostly). 
 * For code blocks, the grey down triangle with a green bar means "run all previous code chunks", and the green right triangle (or Cmd/Ctrl+Shift+Enter) means "run this code chunk".
 * You can knit/render the document (via a button on the toolbar, or Cmd/Ctrl+Shift+K) to generate a rendered HTML/PDF/DOCX file (useful for quickly sharing some analysis, or for various manuscript submissions).
 
 # `tidyverse` refresher
+
 We will assume that you already have some familiarity with R, but just as a quick refresher, we will go through a few of the key aspects of the `tidyverse` that we will use.
+
 The best reference for this material is Hadley Wickham's [R for Data Scientists](http://r4ds.had.co.nz/) and we encourage you to read it if you are interested in learning more. 
 
 ## Tidy data
+
 The basic data structure we're working with is the dataframe (or `tibble` in the `tidyverse` implementation).
+
 Dataframes have rows and columns, and each column has a particular data type. 
 For a dataframe to be **tidy**, every row must record a single **observation**, while every column must describe a single **variable**, such that each cell is a single **value**.
 
@@ -48,9 +55,13 @@ For a dataframe to be **tidy**, every row must record a single **observation**, 
 This consistency allows us to adopt a uniform approach to handling the data, and to make use of powerful tools that R and the `tidyverse` contain.
 
 ## Data wrangling
+
 Once we have tidy data, we can manipulate them using some of the functions in the `tidyverse`.
-To illustrate some of these functions (or "verbs"), we will use an old version of the English (American) Words & Sentences dataset from Wordbank.
+
+To illustrate some of these functions (or "verbs"), we will use an old version of the English (American) Words & Sentences dataset from Wordbank. These are cached locally so we don't need to load using the `wordbankr` package yet. 
+
 We can take a peek at what's in the data by using the `head` function. 
+
 ```{r}
 admins_eng_ws <- read_csv("eng_ws_data.csv")
 head(admins_eng_ws)
@@ -59,19 +70,19 @@ head(admins_eng_ws)
 We can extract rows that fulfill some condition by using the `filter` function. 
 This is useful when we want to select a subpopulation, or to exclude outliers, etc.
 For example, we can examine only the data from first-born children.
+
 ```{r}
 filter(admins_eng_ws, birth_order == "First")
 ```
 
-We can construct new variables using the `mutate` function, perhaps to compute a derived value.
-For example, we might want to split up the ages into age bins.
+We can construct new variables using the `mutate` function, perhaps to compute a derived value. For example, we might want to split up the ages into age bins.
+
 ```{r}
 mutate(admins_eng_ws, age_bin = cut(age, c(12, 18, 24, 30, 36)))
 ```
 
-We can also find a summary of the data at the level of some grouping variable (e.g., participant, age groups, sex).
-To do this, we can use `group_by` to define the groups, and `summarise` to *apply a function* to each group separately.
-For example, we can group the children by their age, and find the mean production for each group, as well as the number of children of each age.
+We can also find a summary of the data at the level of some grouping variable (e.g., participant, age groups, sex). To do this, we can use `group_by` to define the groups, and `summarise` to *apply a function* to each group separately.For example, we can group the children by their age, and find the mean production for each group, as well as the number of children of each age.
+
 ```{r}
 admins_eng_ws |> 
   group_by(age) |> 
@@ -85,15 +96,18 @@ This allows us to chain functions together easily---first applying the `group_by
 This works because almost all verbs in the `tidyverse` take in a dataframe as their first argument, and return another dataframe, so you can pipe them together easily.
 
 **EXERCISE:** Group the data by both age and sex, then calculate the mean production for each group.
+
 ```{r}
 # your code here:
 
 ```
 
 ## Visualisation
+
 Visualisation in the `tidyverse` is handled by `ggplot2` (short for "grammar of graphics").
 We use the function `ggplot` to initialise a plot, and various `geom`s to construct and display data on the plot.
 For example, we may want to show the relationship between age and production, plotting both individual points (for each child) as well as a trendline.
+
 ```{r}
 ggplot(data = admins_eng_ws,
        mapping = aes(x = age, y = production)) +
@@ -102,19 +116,24 @@ ggplot(data = admins_eng_ws,
 ```
 
 # What's in `wordbankr`?
+
 Now we turn our attention to Wordbank proper, via the `wordbankr` package.
 The first thing we can do is look into what is available in the package. 
+
 ```{r}
 ls("package:wordbankr")
 ```
+
 In practice, most of the functions in `wordbankr` simply function to retrieve data from the database, table by table. 
 All of these functions have names like `get_X_data` where `X` is the name of the relevant table. 
 
 Let's take a look at the `instruments` table that tells us about the different CDI variants in Wordbank. 
+
 ```{r}
 instruments <- get_instruments()
 instruments
 ```
+
 Here you can see all the different languages and instruments. That can help us figure out which data we can get. 
 
 The next main data types we might want from Wordbank are `administration_data` and `instrument_data`. 
@@ -122,6 +141,7 @@ Administration data reflect individual instances in which a form was filled out 
 Instrument data reflect responses for every item on the form, so it is much bigger (each row is one item of one administration).
 
 Let's pull in the data from the English (American) Words & Sentences form.
+
 ```{r}
 admins_eng_ws <- get_administration_data(language = "English (American)", 
                                          form = "WS", 
@@ -131,21 +151,25 @@ n_distinct(admins_eng_ws$data_id)
 ```
 
 We can look at the distribution across ages using the `count` verb:
+
 ```{r}
 admins_eng_ws |> 
   count(age)
 ```
 
 **EXERCISE:** Try choosing another instrument in a different language and pulling data from it, then examining the age distribution.
+
 ```{r}
 # your code here:
 
 ```
 
 # Visualising Wordbank data
+
 Now we can make our canonical plot of the variability of individual children's vocabularies. 
 Note that we are using `geom_jitter`, which jitters points around so they don't all end up on top of one another; the amount of jitter is controlled by `width` and `height` (note that we _don't_ jitter vertically at all here). 
 The arguments to the function (`alpha` and `size`) make the points smaller and semi-transparent, so they all can be seen on one plot. 
+
 ```{r}
 ggplot(admins_eng_ws, aes(x = age, y = production)) +
   geom_jitter(alpha = .1, size = .8, width = .3, height = 0) +
@@ -160,6 +184,7 @@ Group the data by age and sex, then get the mean production values by group.
 Plot the result! 
 
 Hint: you can reuse your code from a previous exercise.
+
 ```{r}
 # your code here:
 
@@ -167,16 +192,19 @@ Hint: you can reuse your code from a previous exercise.
 
 Does this effect hold across languages? 
 Try generating the same plot for a different language---do you see the same effect?
+
 ```{r}
 # your code here:
 
 ```
 
 # Digging into item-level data
+
 The exciting part of Wordbank is that you can dig into kids' data for individual words! 
 The list of words for each instrument is stored in the `item_data` table, and the responses for each item for each kid (the "rawest" form of the data) is stored in the `instrument_data` table. 
 
 We'll start by looking at the English items. 
+
 ```{r}
 items_eng_ws <- get_item_data(language = "English (American)", form = "WS")
 head(items_eng_ws)
@@ -184,11 +212,13 @@ head(items_eng_ws)
 
 Note that there are different kinds of items on CDI forms. 
 There's the word list, but there are also items about how children use words, verbal and nominal morphology, word combination (whether children are combining), and items on morphosyntactic complexity of utterances. 
+
 ```{r}
 items_eng_ws |> distinct(item_kind)
 ```
 
 What's more, within the words, there are a whole bunch of different categories of word (marked this way on the form to make it easier for parents to think about different words). 
+
 ```{r}
 items_eng_ws |> 
   filter(item_kind == "word") |> 
@@ -196,6 +226,7 @@ items_eng_ws |>
 ```
 
 There are also some "protosyntactic" categories, created following Bates et al. (1994), who further grouped the categories above into nouns, predicates (verbs and adjectives), function words, and others. 
+
 ```{r}
 items_eng_ws |> 
   filter(item_kind == "word") |> 
@@ -206,10 +237,12 @@ Note that all of this sectioning is specific to the English forms.
 Most other forms follow most of these decisions, but there are many significant deviations from them based on what various form developers wanted at the time and/or felt was appropriate for their language. 
 
 # Getting raw instrument data
+
 OK, we are now ready to get raw instrument data. 
 
 The main issue with doing this is that the raw data are very large, so we might not want to pull every item. 
 Let's try selecting the items "dog" and "cat"!
+
 ```{r}
 dog_cat_items <- items_eng_ws |> 
   filter(item_definition %in% c("dog", "cat"))
@@ -230,6 +263,7 @@ Joins allow you to combine two dataframes by matching values across them.
 In this case, the column `data_id` is present both in the administration data and in the instrument data. 
 The values in this column uniquely identify the administrations, so we can use it to add the data from the administrations dataframe into the item-wise data.
 We'll use a left join, which allows us to take a target dataframe `x` and add all matching information from `y`.
+
 ```{r}
 dog_cat_data |> 
   left_join(admins_eng_ws) |> 
@@ -238,6 +272,7 @@ dog_cat_data |>
 
 Now we can aggregate and plot these data. 
 Check out this slightly more complex pipe chain where we do a join, and then a group, and then a summarise!
+
 ```{r}
 dog_cat_means <- dog_cat_data |>
   left_join(admins_eng_ws) |>
@@ -254,6 +289,7 @@ ggplot(dog_cat_means, aes(x = age, y = produces, col = sex)) +
 **EXERCISE:** The plot above has two _facets_, one for each word.
 Try replotting the data with one facet for each sex, so that the curves for `cat` and `dog` are in the same facet.
 Are the curves similar or different? 
+
 ```{r}
 # your code here:
 
@@ -262,15 +298,18 @@ Are the curves similar or different?
 Looking at `item_eng_ws`, choose two other words which you think will have a big difference in their production curves.
 Extract the item-level data for those words, and plot them. 
 Is the difference in these curves bigger than that between `cat` and `dog`?
+
 ```{r}
 # your code here:
 
 ```
 
 # Replicating Bates & Goodman (1997)
+
 Now we have everything we need to replicate Bates and Goodman's observed correlation between grammar and the lexicon. 
 
 First, get the complexity items. 
+
 ```{r}
 complexity_items <- filter(items_eng_ws, item_kind == "complexity") 
 head(complexity_items)
@@ -278,6 +317,7 @@ head(complexity_items)
 
 Next get the instrument data for these specific items (note that we are using `item_id` to select only the complexity items), for all children. 
 This is a lot of data! 
+
 ```{r}
 complexity_instrument_data <- get_instrument_data(language = "English (American)", 
                                                   form = "WS", 
@@ -292,12 +332,14 @@ For each item, parents checked whether the child's response was more like the `s
 Hint: try using `sum(value == "complex")` to add them up. 
 
 Hint: `data_id` indicates a unique child.
+
 ```{r}
 # your code here:
 
 ```
 
 **EXERCISE:** now join `complexity_means` and `admins_eng_ws` to create a single dataframe.
+
 ```{r}
 # complete this command:
 # admins_eng_ws <- left_join(...)
@@ -305,6 +347,7 @@ Hint: `data_id` indicates a unique child.
 ```
 
 Now we can plot the relationship described by Bates and Goodman!
+
 ```{r}
 ggplot(admins_eng_ws, 
        aes(x = production, y = complexity_score)) + 
@@ -313,12 +356,15 @@ ggplot(admins_eng_ws,
 ```
 
 We can even quantify the strength of this relationship statistically!
+
 ```{r}
 cor.test(admins_eng_ws$production, admins_eng_ws$complexity_score)
 ```
 
 # Going beyond
+
 ## Mini projects
+
 Now that you have some familiarity with Wordbank, we'll give you some time to work on your own mini projects!
 Think about some potential questions you could ask with the data---what new analyses can you run?
 We encourage you to explore items, languages, or categories that are relevant to your own work.
@@ -343,6 +389,7 @@ Was your hypothesis supported by the data?
 What further questions do you have that you might want to explore?
 
 ## Contribute to Wordbank
+
 If you use the CDIs in your research, and would like to support open science, we'd love for you to contribute your CDI data to Wordbank!
 We're always open to contributions---all you need is the item-level data and any demographics you might have, as well as a citation for the dataset. 
 Chat with us or shoot us an email to find out how you can contribute! 
