@@ -327,9 +327,9 @@ head(complexity_instrument_data)
 
 For each item, parents checked whether the child's response was more like the `simple` or `complex` model sentence. 
 
-**EXERCISE:** Average the complexity data for each individual so that you have one number (`complexity_score`) for each child, with that number indicating the number of items on which the parent indicated `complex`. 
+**EXERCISE:** Average the complexity data for each individual so that you have one number (`complexity_score`) for each child, with that number indicating the proportion of items on which the parent indicated `complex`. 
 
-Hint: try using `sum(value == "complex")` to add them up. 
+Hint: try using `mean(value == "complex")` to calculate the mean. 
 
 Hint: `data_id` indicates a unique child.
 
