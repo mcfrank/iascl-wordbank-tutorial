@@ -283,7 +283,10 @@ dog_cat_means <- dog_cat_data |>
 ggplot(dog_cat_means, aes(x = age, y = produces, col = sex)) +
   geom_point() + 
   geom_smooth() +
-  facet_wrap(~item_definition)
+  facet_wrap(~item_definition) +
+  labs(x = "Age (months)",
+       y = "Proportion of children producing",
+       col = "Sex")
 ```
 
 **EXERCISE:** The plot above has two _facets_, one for each word.
@@ -352,7 +355,9 @@ Now we can plot the relationship described by Bates and Goodman!
 ggplot(admins_eng_ws, 
        aes(x = production, y = complexity_score)) + 
   geom_jitter(alpha = .1, size = .5, width = 0, height = .3) + 
-  geom_smooth()
+  geom_smooth() +
+  labs(x = "Number of words produced",
+       y = "Complexity score")
 ```
 
 We can even quantify the strength of this relationship statistically!
